@@ -1,0 +1,7 @@
+export PATH=$PATH:/usr/local/bin
+#set java environment
+JAVA_HOME=/usr/java/jdk1.8.0_121
+CLASSPATH=.:$JAVA_HOME/lib/tools.jar
+PATH=$JAVA_HOME/bin:$PATH
+LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export JAVA_HOME CLASSPATH PATH LD_LIBRARY_PATH
