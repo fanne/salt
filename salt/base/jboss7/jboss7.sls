@@ -69,6 +69,9 @@ jboss-as-standalone:
     - unless: chkconfig --list|grep jboss-as-standalone
     - require:
       - file: install-jboss
+    - require:
+      - file: /etc/init.d/jboss-as-standalone
   service.running:
     - enable: True
-
+    - require:
+      - file: /etc/init.d/jboss-as-standalone

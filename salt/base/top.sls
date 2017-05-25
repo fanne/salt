@@ -1,3 +1,4 @@
 base:
-  '*':
-    - jdk.jdk_8_121
+  'salt_node_02':
+    - initpkg.install
+    - pcre.install
