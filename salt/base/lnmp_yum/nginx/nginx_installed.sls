@@ -4,17 +4,18 @@ nginx_installed:
       - nginx
 
   file.managed:
-    - name: {{pillar['conf_dir']}}/default.conf
+    - name: {{pillar['nginx_conf_dir']}}/default.conf
     - source: salt://lnmp_yum/nginx/files/default.conf
     - user: root
     - group: root
     - mode: 644
+    - template: jinja
 
   service.running:
     - name: nginx
     - enable: True
     - reload: True
     - watch:
-      - file: {{pillar['conf_dir']}}/default.conf
+      - file: {{pillar['nginx_conf_dir']}}/default.conf
     - require:
       - pkg: nginx

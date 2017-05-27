@@ -21,12 +21,12 @@ mysql_install:
     - user: root
     - group: root
     - mode: 644
-    - watch_in:
-      - service: mysqld
+   # - watch_in:
+   #   - service: mysqld
 
 
-  service.running:
-    - name: mysqld
-    - enable: True
-    - reload: True
+  #service.running:
+  #  - name: mysqld
+  #  - enable: True
+  #  - reload: True
 

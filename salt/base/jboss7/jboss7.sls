@@ -65,14 +65,14 @@ install-jboss:
 
 jboss-as-standalone:
   cmd.run:
-    #- name: chkconfig --add jboss-as-standalone
+    - name: chkconfig --add jboss-as-standalone
     - name: /etc/init.d/jboss-as-standalone start
-    #- unless: chkconfig --list|grep jboss-as-standalone
+    - unless: chkconfig --list|grep jboss-as-standalone
     - require:
       - file: install-jboss
     - require:
       - file: /etc/init.d/jboss-as-standalone
-  #service.running:
-  #  - enable: True
-  #  - require:
-  #    - file: /etc/init.d/jboss-as-standalone
+  service.running:
+    - enable: True
+    - require:
+      - file: /etc/init.d/jboss-as-standalone

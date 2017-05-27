@@ -92,7 +92,7 @@ start() {
     else
       su - $JBOSS_USER -c "LAUNCH_JBOSS_IN_BACKGROUND=1 JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT -c $JBOSS_CONFIG" 2>&1 > $JBOSS_CONSOLE_LOG &
     fi
-  fi
+  fi | at now
 
   count=0
   launched=false
