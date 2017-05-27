@@ -9,9 +9,11 @@ repo_init:
 mysql_install:
   pkg.installed:
     - names:
-      - mysql
-      - mysql-server
-      - mysql-devel
+      - mysql-community-server
+      - mysql-community-devel
+      - mysql-community-common
+      - mysql-community-libs
+      - mysql-community-client
     - require:
       - file: repo_init    
 

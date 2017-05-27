@@ -2,7 +2,7 @@ php_repo:
   cmd.run:
     - names:
       - rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
-      - yum clean all
+      #- yum clean all
     - unless: ls /etc/yum.repos.d/|grep saltstack|grep -v grep
 
 php_installed:
