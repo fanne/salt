@@ -19,6 +19,9 @@ php_installed:
       - php{{pillar['php_version']}}w-ldap
       - php{{pillar['php_version']}}w-fpm
       - php{{pillar['php_version']}}w-opcache
+      - php{{pillar['php_version']}}w-bcmath
+      - php{{pillar['php_version']}}w-mbstring 
+      - php{{pillar['php_version']}}w-xml 
     - require:
       - cmd: php_repo
 
@@ -34,6 +37,9 @@ php_installed:
       - php{{pillar['php_version']}}w-ldap
       - php{{pillar['php_version']}}w-fpm
       - php{{pillar['php_version']}}w-opcache
+      - php{{pillar['php_version']}}w-bcmath
+      - php{{pillar['php_version']}}w-mbstring 
+      - php{{pillar['php_version']}}w-xml 
     - require:
       - cmd: php_repo
 
@@ -45,6 +51,9 @@ php_installed:
       - php-common
       - php-mysql
       - php-pdo
+      - php-bcmath
+      - php-mbstring 
+      - php-xml 
     {% endif %}
 
 
@@ -80,12 +89,16 @@ php_service:
   service.running:
     - name: php-fpm
     - enable: True
+    - reload: True
+    - watch:
+      - file: pip_ini
     - require:
       {% if pillar['php_version'] != 53 %}
       - pkg: php{{pillar['php_version']}}w-fpm
       {% elif pillar['php_version'] == 53 %}
       - pkg: php-fpm
       {% endif %}
+    
 
 php_info:
   file.managed:
