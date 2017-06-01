@@ -9,13 +9,15 @@ repo_init:
 mysql_install:
   pkg.installed:
     - names:
+      - MySQL-python
       - mysql-community-server
       - mysql-community-devel
       - mysql-community-common
       - mysql-community-libs
       - mysql-community-client
-    - require:
-      - file: repo_init    
+    - onlyif:
+      - names:
+        - test -f /etc/yum.repos.d/mysql-{{pillar['mysql_version']}}.repo
 
   file.managed:
     - name: {{pillar['mysql_conf_dir']}}/my.cnf
@@ -23,12 +25,21 @@ mysql_install:
     - user: root
     - group: root
     - mode: 644
-   # - watch_in:
-   #   - service: mysqld
+    - watch_in:
+      - service: mysqld
+    - require:
+      - pkg: mysql-community-server
 
 
-  #service.running:
-  #  - name: mysqld
-  #  - enable: True
-  #  - reload: True
+  service.running:
+    - name: mysqld
+    - enable: True
+   # - reload: True
+   # - require:
+    #  - pkg: mysql-community-server
+      
+  mysql_user.present:
+    - name: {{pillar['root_user']}}
+    - host: {{pillar['root_host']}}
+    - password: {{pillar['root_passwd']}}     
 

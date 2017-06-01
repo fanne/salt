@@ -2,8 +2,7 @@ php_repo:
   cmd.run:
     - names:
       - rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
-      #- yum clean all
-    - unless: ls /etc/yum.repos.d/|grep saltstack|grep -v grep
+    - unless: ls /etc/yum.repos.d/|grep webtatic|grep -v grep
 
 php_installed:
   pkg.installed:
@@ -57,7 +56,7 @@ php_installed:
     {% endif %}
 
 
-pip_ini:
+php_ini:
   file.managed:
     - name: {{pillar['php_conf_dir']}}/php.ini
     - source: salt://lnmp_yum/php/files/php.ini_{{pillar['php_version']}}
@@ -91,7 +90,7 @@ php_service:
     - enable: True
     - reload: True
     - watch:
-      - file: pip_ini
+      - file: php_ini
     - require:
       {% if pillar['php_version'] != 53 %}
       - pkg: php{{pillar['php_version']}}w-fpm
@@ -102,12 +101,12 @@ php_service:
 
 php_info:
   file.managed:
-    - name: {{pillar['root_dir']}}/phpinfo.php
+    - name: {{pillar['nginx_root_dir']}}/phpinfo.php
     - source: salt://lnmp_yum/php/files/phpinfo.php
     - user: root
     - group: root
     - mode: 644
-    - onlyif: test -d {{pillar['root_dir']}}
+    - onlyif: test -d {{pillar['nginx_root_dir']}}
     - require:
       {% if pillar['php_version'] != 53 %}
       - pkg: php{{pillar['php_version']}}w-fpm
