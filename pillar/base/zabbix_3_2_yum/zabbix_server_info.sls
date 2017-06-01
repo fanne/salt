@@ -4,3 +4,4 @@ DB_user: zabbix
 DB_passwd: zabbix
 zabbix_sql: /usr/share/doc/zabbix-server-mysql-3.2.6/create.sql.gz
 zabbix_conf_dir: /etc/zabbix
+server_ip: 10.163.46.196
