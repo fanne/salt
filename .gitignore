@@ -1,3 +1,4 @@
 *.zip
 *.rpm
 *.gz
+.svn

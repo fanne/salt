@@ -6,11 +6,22 @@ repo_init:
     - group: root
     - mode: 644
 
+city_fan_repo:
+  file.managed:
+    - name: /etc/yum.repos.d/city-fan.org.repo
+    - source: salt://zabbix_3_2_yum/zabbix_server/files/city-fan.org.repo
+    - user: root
+    - group: root
+    - mode: 644
+
 pkg_install:
   pkg.installed:
     - names:
       - MySQL-python
       - python-devel
+      - libcurl
+      - libcurl-devel
+      - net-snmp-devel
       
 zabbix_install:
   pkg.installed:

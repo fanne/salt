@@ -19,6 +19,7 @@ mysql_install:
       - names:
         - test -f /etc/yum.repos.d/mysql-{{pillar['mysql_version']}}.repo
 
+conf_file:
   file.managed:
     - name: {{pillar['mysql_conf_dir']}}/my.cnf
     - source: salt://lnmp_yum/mysql/files/my.cnf
@@ -30,13 +31,23 @@ mysql_install:
     - require:
       - pkg: mysql-community-server
 
+mysqld_file:
+  file.managed:
+    - name: /etc/init.d/mysqld
+    - source: salt://lnmp_yum/mysql/files/mysqld-{{pillar['mysql_version']}}
+    - user: root
+    - group: root
+    - mode: 755
+    - require:
+      - pkg: mysql-community-server
 
+mysqld_start:
   service.running:
     - name: mysqld
     - enable: True
-   # - reload: True
-   # - require:
-    #  - pkg: mysql-community-server
+    - reload: True
+    - require:
+      - pkg: mysql-community-server
       
   mysql_user.present:
     - name: {{pillar['root_user']}}
