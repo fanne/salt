@@ -22,6 +22,7 @@ pkg_install:
       - libcurl
       - libcurl-devel
       - net-snmp-devel
+      - mailx
       
 zabbix_install:
   pkg.installed:
@@ -64,6 +65,14 @@ sql_init:
       - rpm -q zabbix-server-mysql
       - test -f {{pillar['zabbix_sql']}}
 
+
+mail_conf:
+  file.managed:
+    - name: /etc/mail.rc
+    - source: salt://zabbix_3_2_yum/zabbix_server/files/mail.rc
+    - user: root
+    - group: root
+    - mode: 644
 
 zabbix_server_conf:
   file.managed:
