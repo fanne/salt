@@ -5,3 +5,4 @@ base:
     - lnmp_yum.nginx.nginx_info
     - lnmp_yum.php.php_info
     - zabbix_3_2_yum.zabbix_server_info
+    - mongodb_yum.mongodb_info

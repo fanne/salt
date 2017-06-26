@@ -74,6 +74,15 @@ mail_conf:
     - group: root
     - mode: 644
 
+sendMail_file:
+  file.managed:
+    - name: /usr/lib/zabbix/alertscripts/sendmail.sh
+    - source: salt://zabbix_3_2_yum/zabbix_server/files/sendmail.sh
+    - user: zabbix
+    - group: zabbix
+    - mode: 755
+
+
 zabbix_server_conf:
   file.managed:
     - name: {{pillar['zabbix_conf_dir']}}/zabbix_server.conf
