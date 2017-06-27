@@ -6,6 +6,12 @@ repo_init:
     - group: root
     - mode: 644
 
+rpm_remove:
+  pkg.removed:
+    - names:
+      - mysql
+      - mysql-devel
+      - mysql-libs
 mysql_install:
   pkg.installed:
     - names:

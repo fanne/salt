@@ -21,7 +21,7 @@ prog="mysqld"
 
 # Set timeouts here so they can be overridden from /etc/sysconfig/mysqld
 STARTTIMEOUT=120
-STOPTIMEOUT=60
+STOPTIMEOUT=600
 
 # Set in /etc/sysconfig/mysqld, will be passed to mysqld_safe
 MYSQLD_OPTS=
@@ -30,6 +30,9 @@ MYSQLD_OPTS=
 
 lockfile=/var/lock/subsys/$prog
 
+# Support for extra options passed to mysqld
+command=$1 && shift
+extra_opts="$@"
 
 # Extract value of a MySQL option from config files
 # Usage: get_mysql_option OPTION DEFAULT SECTION1 SECTION2 SECTIONN
@@ -61,6 +64,17 @@ case $socketfile in
      *) adminsocket="$datadir/$socketfile" ;;
 esac
 
+install_validate_password_sql_file () {
+    local dir
+    local initfile
+    dir=/var/lib/mysql
+    initfile="$(mktemp $dir/install-validate-password-plugin.XXXXXX.sql)"
+    chown mysql:mysql "$initfile"
+    echo "INSERT INTO mysql.plugin (name, dl) VALUES ('validate_password', 'validate_password.so');" > "$initfile"
+    echo "SHUTDOWN;" >> "$initfile"
+    echo "$initfile"
+}
+
 start(){
     [ -x $exec ] || exit 5
     # check to see if it's already running
@@ -75,7 +89,7 @@ start(){
 	action $"Starting $prog: " /bin/true
 	ret=0
     else
-    	# prepare for start
+	# prepare for start
 	if [ ! -e "$errlogfile" -a ! -h "$errlogfile" -a "x$(dirname "$errlogfile")" = "x/var/log" ]; then
 	    install /dev/null -m0640 -omysql -gmysql "$errlogfile"
 	fi
@@ -83,15 +97,15 @@ start(){
 	if [ ! -d "$datadir/mysql" ] ; then
 	    # First, make sure $datadir is there with correct permissions
 	    if [ ! -d "$datadir" -a ! -h "$datadir" -a "x$(dirname "$datadir")" = "x/var/lib" ]; then
-		install -d -m0755 -omysql -gmysql "$datadir" || exit 1
+		install -d -m0751 -omysql -gmysql "$datadir" || exit 1
 	    fi
 	    if [ ! -h "$datadir" -a "x$(dirname "$datadir")" = "x/var/lib" ]; then
 		chown mysql:mysql "$datadir"
-		chmod 0755 "$datadir"
+		chmod 0751 "$datadir"
 	    fi
 	    if [ -x /sbin/restorecon ]; then
 		/sbin/restorecon "$datadir"
-		for dir in /var/lib/mysql-files ; do
+		for dir in /var/lib/mysql-files /var/lib/mysql-keyring ; do
 		    if [ -x /usr/sbin/semanage -a -d /var/lib/mysql -a -d $dir ] ; then
 			/usr/sbin/semanage fcontext -a -e /var/lib/mysql $dir >/dev/null 2>&1
 			/sbin/restorecon $dir
@@ -99,15 +113,23 @@ start(){
 		done
 	    fi
 	    # Now create the database
-	    action $"Initializing MySQL database: " /usr/bin/mysql_install_db --rpm --datadir="$datadir" --user=mysql
+	    action $"Initializing MySQL database: " /usr/sbin/mysqld --initialize --datadir="$datadir" --user=mysql
 	    ret=$?
-	    if [ $ret -ne 0 ] ; then
-		return $ret
+	    [ $ret -ne 0 ] && return $ret
+	    initfile="$(install_validate_password_sql_file)"
+	    action $"Installing validate password plugin: " /usr/sbin/mysqld --datadir="$datadir" --user=mysql --init-file="$initfile"
+	    ret=$?
+	    rm -f "$initfile"
+	    chown -R mysql:mysql "$datadir"
+	    [ $ret -ne 0 ] && return $ret
+	    # Generate certs if needed
+	    if [ -x /usr/bin/mysql_ssl_rsa_setup -a ! -e "${datadir}/server-key.pem" ] ; then
+		/usr/bin/mysql_ssl_rsa_setup --datadir="$datadir" --uid=mysql >/dev/null 2>&1
 	    fi
 	fi
 	if [ ! -h "$datadir" -a "x$(dirname "$datadir")" = "x/var/lib" ]; then
 	    chown mysql:mysql "$datadir"
-	    chmod 0755 "$datadir"
+	    chmod 0751 "$datadir"
 	fi
 	# Pass all the options determined above, to ensure consistent behavior.
 	# In many cases mysqld_safe would arrive at the same conclusions anyway
@@ -118,7 +140,7 @@ start(){
 	# alarms, per bug #547485
 	$exec $MYSQLD_OPTS --datadir="$datadir" --socket="$socketfile" \
 		--pid-file="$mypidfile" \
-		--basedir=/usr --user=mysql >/dev/null 2>&1 &
+		--basedir=/usr --user=mysql $extra_opts > /dev/null 2>&1 &
 	safe_pid=$!
 	# Spin for a maximum of N seconds waiting for the server to come up;
 	# exit the loop immediately if mysqld_safe process disappears.
@@ -157,7 +179,7 @@ stop(){
 	    action $"Stopping $prog: " /bin/true
 	    return 0
 	fi
-	MYSQLPID=`cat "$mypidfile"`
+	MYSQLPID=$(cat "$mypidfile")
 	if [ -n "$MYSQLPID" ]; then
 	    /bin/kill "$MYSQLPID" >/dev/null 2>&1
 	    ret=$?
@@ -187,7 +209,7 @@ stop(){
 	fi
 	return $ret
 }
- 
+
 restart(){
     stop
     start
@@ -199,7 +221,7 @@ condrestart(){
 
 
 # See how we were called.
-case "$1" in
+case "$command" in
   start)
     start
     ;;
